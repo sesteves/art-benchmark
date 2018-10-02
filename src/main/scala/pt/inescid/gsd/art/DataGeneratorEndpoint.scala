@@ -10,7 +10,7 @@ object DataGeneratorEndpoint {
 
   @OnOpen
   def onOpen(session: Session): Unit = {
-    System.out.printf("Session opened, id: %s%n", session.getId)
+    println("Session opened, id: %s%n", session.getId)
     try
       session.getBasicRemote.sendText("Hi there, we are successfully connected.")
     catch {
@@ -21,7 +21,7 @@ object DataGeneratorEndpoint {
 
   @OnMessage
   def onMessage(message: String, session: Session): Unit = {
-    System.out.printf("Message received. Session id: %s Message: %s%n", session.getId, message)
+    println("Message received. Session id: %s Message: %s%n", session.getId, message)
     try
       session.getBasicRemote.sendText(String.format("We received your message: %s%n", message))
     catch {
@@ -37,6 +37,6 @@ object DataGeneratorEndpoint {
 
   @OnClose
   def onClose(session: Session): Unit = {
-    System.out.printf("Session closed with id: %s%n", session.getId)
+    println("Session closed with id: %s%n", session.getId)
   }
 }
