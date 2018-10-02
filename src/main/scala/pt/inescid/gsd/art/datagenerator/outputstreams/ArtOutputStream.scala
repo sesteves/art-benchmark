@@ -1,21 +1,23 @@
-package pt.inescid.gsd.art.outputstreams
+package pt.inescid.gsd.art.datagenerator.outputstreams
 
 import java.io.OutputStream
 import java.util.concurrent.TimeUnit.{NANOSECONDS, SECONDS}
 
 import scala.annotation.tailrec
 
-abstract class ArtOutputStream(out: OutputStream, minBytesPerSec: Int, maxBytesPerSec: Int, period: Int)
+abstract class ArtOutputStream(out: OutputStream, var minBps: Int, var maxBps: Int, var period: Int)
   extends OutputStream {
 
-  require(minBytesPerSec > 0)
-  require(maxBytesPerSec >= minBytesPerSec)
+  require(minBps > 0)
+  require(maxBps >= minBps)
 
   private val SYNC_INTERVAL = NANOSECONDS.convert(10, SECONDS)
   private val CHUNK_SIZE = 8192
   private var lastSyncTime = System.nanoTime
   private var bytesWrittenSinceSync = 0L
-  protected var currentBytesPerSec = minBytesPerSec
+  protected var currentBps = minBps
+
+  def write(bytes: Array[Byte]): Unit
 
   override def write(b: Int) {
     waitToWrite(1)
@@ -45,7 +47,7 @@ abstract class ArtOutputStream(out: OutputStream, minBytesPerSec: Int, maxBytesP
     val elapsedNanosecs = math.max(now - lastSyncTime, 1)
     val rate = bytesWrittenSinceSync.toDouble * 1e9 / elapsedNanosecs
 
-    if (rate < currentBytesPerSec) {
+    if (rate < currentBps) {
       // It's okay to write; just update some variables and return
       bytesWrittenSinceSync += numBytes
       if (now > lastSyncTime + SYNC_INTERVAL) {
@@ -56,7 +58,7 @@ abstract class ArtOutputStream(out: OutputStream, minBytesPerSec: Int, maxBytesP
       }
     } else {
       // Calculate how much time we should sleep to bring ourselves to the desired rate.
-      val targetTimeInMillis = bytesWrittenSinceSync * 1000 / currentBytesPerSec
+      val targetTimeInMillis = bytesWrittenSinceSync * 1000 / currentBps
       val elapsedTimeInMillis = elapsedNanosecs / 1000000
       val sleepTimeInMillis = targetTimeInMillis - elapsedTimeInMillis
       if (sleepTimeInMillis > 0) {
@@ -69,11 +71,11 @@ abstract class ArtOutputStream(out: OutputStream, minBytesPerSec: Int, maxBytesP
 
 object ArtOutputStreamFactory {
 
-  def apply(function: String, out: OutputStream, minBytesPerSec: Int, maxBytesPerSec: Int, period: Int):
+  def apply(function: String, out: OutputStream, minBps: Int, maxBps: Int, period: Int):
   ArtOutputStream = {
 
     function match {
-      case "step" => new StepOutputStream(out,minBytesPerSec, maxBytesPerSec, period)
+      case "step" => new StepOutputStream(out,minBps, maxBps, period)
       case "sinusoid" => ???
     }
 
