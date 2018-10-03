@@ -13,7 +13,7 @@ import scala.util.Random
 
 object DataGenerator {
 
-  val WSServerPort = 4870
+  val WSServerPort = 3030
 
   def main(args: Array[String]) {
     if (args.length < 6) {
