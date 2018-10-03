@@ -8,8 +8,6 @@ import pt.inescid.gsd.art.datagenerator.outputstreams.ArtOutputStream
 @ServerEndpoint("/art-datagen")
 class DataGeneratorEndpoint extends Subject[DataGeneratorEndpoint] {
 
-  val ArtOutputStreamKey = "art-output-stream"
-
   val MessageSeparator = "::"
 
   var minBps: Int = _
@@ -20,7 +18,7 @@ class DataGeneratorEndpoint extends Subject[DataGeneratorEndpoint] {
   def onOpen(session: Session, endpointConfig: EndpointConfig): Unit = {
     println("Session opened, id: %s%n", session.getId)
 
-    val artOS = endpointConfig.getUserProperties().get(ArtOutputStreamKey).asInstanceOf[ArtOutputStream]
+    val artOS = endpointConfig.getUserProperties().get(Observer.ObserverKey).asInstanceOf[ArtOutputStream]
     addObserver(artOS)
   }
 
