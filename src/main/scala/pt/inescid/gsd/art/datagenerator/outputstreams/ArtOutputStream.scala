@@ -3,13 +3,10 @@ package pt.inescid.gsd.art.datagenerator.outputstreams
 import java.io.OutputStream
 import java.util.concurrent.TimeUnit.{NANOSECONDS, SECONDS}
 
-import pt.inescid.gsd.art.datagenerator.Observer.Observer
-import pt.inescid.gsd.art.datagenerator.{DataGeneratorEndpoint, Observer}
-
 import scala.annotation.tailrec
 
 abstract class ArtOutputStream(out: OutputStream, var minBps: Int, var maxBps: Int, var period: Int)
-  extends OutputStream with Observer[DataGeneratorEndpoint] {
+  extends OutputStream {
 
   require(minBps > 0)
   require(maxBps >= minBps)
@@ -71,11 +68,6 @@ abstract class ArtOutputStream(out: OutputStream, var minBps: Int, var maxBps: I
     }
   }
 
-  override def update(subject: DataGeneratorEndpoint): Unit = {
-    if (subject.minBps > 0) this.minBps = subject.minBps
-    if (subject.maxBps > 0) this.maxBps = subject.maxBps
-    if (subject.period > 0) this.period = subject.period
-  }
 }
 
 object ArtOutputStreamFactory {
@@ -84,7 +76,7 @@ object ArtOutputStreamFactory {
   ArtOutputStream = {
 
     function match {
-      case "step" => new StepOutputStream(out,minBps, maxBps, period)
+      case "step" => new StepOutputStream(out, minBps, maxBps, period)
       case "sinusoid" => ???
     }
 

@@ -1,19 +1,25 @@
 package pt.inescid.gsd.art.datagenerator
 
 import java.io.{ByteArrayOutputStream, IOException}
-import java.net.ServerSocket
+import java.net.{InetSocketAddress, ServerSocket}
 import java.nio.ByteBuffer
 
 import org.apache.spark.SparkConf
 import org.apache.spark.serializer.KryoSerializer
-import org.glassfish.tyrus.server.Server
+import org.java_websocket.WebSocket
+import org.java_websocket.handshake.ClientHandshake
+import org.java_websocket.server.WebSocketServer
 import pt.inescid.gsd.art.datagenerator.outputstreams.{ArtOutputStream, ArtOutputStreamFactory}
 
 import scala.util.Random
 
-object DataGenerator {
+object DataGenerator extends WebSocketServer(new InetSocketAddress(3030)) {
 
   val WSServerPort = 3030
+
+  val CommandSeparator = "::"
+
+  var artOutputStream: ArtOutputStream = null
 
   def main(args: Array[String]) {
     if (args.length < 5) {
@@ -24,6 +30,9 @@ object DataGenerator {
     // Parse the arguments using a pattern match
     val (port, function, minBps, maxBps, period) = (args(0).toInt, args(1), args(2).toInt, args(3).toInt, args(4).toInt)
 
+    // starting web socket server
+    start()
+
     // generate data to send
     val array = getData(minBps)
     val countBuf = ByteBuffer.wrap(new Array[Byte](4))
@@ -33,25 +42,30 @@ object DataGenerator {
     val serverSocket = new ServerSocket(port)
     println("Listening on port " + port)
 
-    while (true) {
-      val socket = serverSocket.accept()
-      println("Got a new connection")
+    try {
+      while (true) {
+        val socket = serverSocket.accept()
+        println("Got a new connection")
 
-      val out = ArtOutputStreamFactory(function, socket.getOutputStream, minBps, maxBps, period)
-      val wsServer = startWSServer(out)
+        val out = ArtOutputStreamFactory(function, socket.getOutputStream, minBps, maxBps, period)
+        artOutputStream = out
 
-      try {
-        while (true) {
-          out.write(countBuf.array)
-          out.write(array)
+        try {
+          while (true) {
+            out.write(countBuf.array)
+            out.write(array)
+          }
+        } catch {
+          case _: IOException =>
+            println("Client disconnected")
+        } finally {
+          artOutputStream = null
+          socket.close()
         }
-      } catch {
-        case _: IOException =>
-          println("Client disconnected")
-      } finally {
-        wsServer.stop()
-        socket.close()
       }
+
+    } finally {
+      stop()
     }
   }
 
@@ -70,13 +84,38 @@ object DataGenerator {
     bufferStream.toByteArray
   }
 
-  def startWSServer(artOS: ArtOutputStream): Server = {
-//    val properties = new java.util.HashMap[String, AnyRef]
-//    properties.put(Observer.ObserverKey, artOS)
-//
-//    val server = new Server("localhost", WSServerPort, "/art", properties, classOf[DataGeneratorEndpoint])
-//    server.start()
-//    server
-    null
+  override def onStart(): Unit = {
+    println("WS server started.")
+  }
+
+  def onOpen(conn: WebSocket, handshake: ClientHandshake): Unit = {
+    println("Connection opened. Waiting for commands...")
+  }
+
+  def onMessage(conn: WebSocket, command: String): Unit = {
+    println(s"Received command '$command'")
+
+    if (artOutputStream != null) {
+      val commandParts = command.split(CommandSeparator)
+      val op = commandParts.head
+      val value = commandParts.last
+
+      op match {
+        case "set-min" => artOutputStream.minBps = value.toInt
+        case "set-max" => artOutputStream.maxBps = value.toInt
+        case "set-period" => artOutputStream.period = value.toInt
+        case _ => println(s"Invalid operation: $op")
+      }
+    } else {
+      println("There is no active session to execute command.")
+    }
+  }
+
+  def onClose(conn: WebSocket, code: Int, reason: String, remote: Boolean): Unit = {
+    println("Connection closed.")
+  }
+
+  override def onError(conn: WebSocket, ex: Exception): Unit = {
+    ex.printStackTrace()
   }
 }
