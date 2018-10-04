@@ -12,8 +12,15 @@ object Observer {
     this: S =>
     private var observers: List[Observer[S]] = Nil
 
-    def addObserver(observer: Observer[S]) = observers = observer :: observers
+    def addObserver(observer: Observer[S]) =  {
+      println("adding observer!")
+      observers = observer :: observers
+      println(s"observers size: ${observers.size}")
+    }
 
-    def notifyObservers = observers.foreach(_.update(this))
+    def notifyObservers = {
+      println(s"Notify observers size: ${observers.size}")
+      observers.foreach(_.update(this))
+    }
   }
 }

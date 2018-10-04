@@ -2,11 +2,9 @@ package pt.inescid.gsd.art.datagenerator
 
 import javax.websocket._
 import javax.websocket.server.ServerEndpoint
-import pt.inescid.gsd.art.datagenerator.Observer.Subject
-import pt.inescid.gsd.art.datagenerator.outputstreams.ArtOutputStream
 
-@ServerEndpoint("/art-datagen")
-class DataGeneratorEndpoint extends Subject[DataGeneratorEndpoint] {
+@ServerEndpoint("/datagen")
+class DataGeneratorEndpoint() { // extends Subject[DataGeneratorEndpoint] {
 
   val MessageSeparator = "::"
 
@@ -15,16 +13,13 @@ class DataGeneratorEndpoint extends Subject[DataGeneratorEndpoint] {
   var period: Int = _
 
   @OnOpen
-  def onOpen(session: Session, endpointConfig: EndpointConfig): Unit = {
-    println("Session opened, id: %s%n", session.getId)
-
-    val artOS = endpointConfig.getUserProperties().get(Observer.ObserverKey).asInstanceOf[ArtOutputStream]
-    addObserver(artOS)
+  def onOpen(session: Session, config: EndpointConfig): Unit = {
+    println(s"Session opened, id: ${session.getId}")
   }
 
   @OnMessage
   def onMessage(message: String, session: Session): Unit = {
-    println("Message received. Session id: %s Message: %s%n", session.getId, message)
+    println(s"Message received. Session id: ${session.getId} Message: $message")
     val messageParts = message.split(MessageSeparator)
     val op = messageParts.head
     val value = messageParts.last
@@ -35,7 +30,7 @@ class DataGeneratorEndpoint extends Subject[DataGeneratorEndpoint] {
       case "set-period" => period = value.toInt
     }
 
-    notifyObservers
+    // notifyObservers
   }
 
   @OnError
@@ -45,7 +40,7 @@ class DataGeneratorEndpoint extends Subject[DataGeneratorEndpoint] {
 
   @OnClose
   def onClose(session: Session): Unit = {
-    println("Session closed with id: %s%n", session.getId)
+    println(s"Session closed with id: ${session.getId}")
   }
 
 }

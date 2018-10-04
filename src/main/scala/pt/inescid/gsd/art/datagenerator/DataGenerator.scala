@@ -16,7 +16,7 @@ object DataGenerator {
   val WSServerPort = 3030
 
   def main(args: Array[String]) {
-    if (args.length < 6) {
+    if (args.length < 5) {
       System.err.println("Usage: DataGenerator <port> <function> <minBytesPerSec> <maxBytesPerSec> <period>")
       System.exit(1)
     }
@@ -71,11 +71,12 @@ object DataGenerator {
   }
 
   def startWSServer(artOS: ArtOutputStream): Server = {
-    val properties = new java.util.HashMap[String, AnyRef]
-    properties.put(Observer.ObserverKey, artOS)
-
-    val server = new Server("localhost", WSServerPort, "/ws", properties, classOf[DataGeneratorEndpoint])
-    server.start()
-    server
+//    val properties = new java.util.HashMap[String, AnyRef]
+//    properties.put(Observer.ObserverKey, artOS)
+//
+//    val server = new Server("localhost", WSServerPort, "/art", properties, classOf[DataGeneratorEndpoint])
+//    server.start()
+//    server
+    null
   }
 }
