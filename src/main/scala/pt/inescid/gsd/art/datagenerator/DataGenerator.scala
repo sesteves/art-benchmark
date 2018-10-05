@@ -15,8 +15,6 @@ import scala.util.Random
 
 object DataGenerator extends WebSocketServer(new InetSocketAddress(3030)) {
 
-  val WSServerPort = 3030
-
   val CommandSeparator = "::"
 
   var artOutputStream: ArtOutputStream = null

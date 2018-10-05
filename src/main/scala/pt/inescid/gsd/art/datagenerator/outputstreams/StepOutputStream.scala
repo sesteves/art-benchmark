@@ -5,8 +5,6 @@ import java.io.OutputStream
 class StepOutputStream(out: OutputStream, minBps: Int, maxBps: Int, period: Int)
   extends ArtOutputStream(out, minBps, maxBps, period) {
 
-  private val halfPeriod = period / 2
-
   private val phaseBps = Array(minBps, maxBps)
 
   private var isPhaseZero = true
@@ -16,7 +14,7 @@ class StepOutputStream(out: OutputStream, minBps: Int, maxBps: Int, period: Int)
   override def write(bytes: Array[Byte]): Unit = {
     val tick = System.currentTimeMillis()
 
-    if (tick - lastTick > halfPeriod) {
+    if (tick - lastTick > period / 2) {
       currentBps = if (isPhaseZero) maxBps else minBps
 
       isPhaseZero = !isPhaseZero

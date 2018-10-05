@@ -7,5 +7,7 @@ class ConstantOutputStream(out: OutputStream, minBps: Int, maxBps: Int, period: 
 
   override def write(bytes: Array[Byte]): Unit = {
     currentBps = minBps
+
+    write(bytes, 0, bytes.length)
   }
 }
