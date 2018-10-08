@@ -18,7 +18,7 @@ class SinusoidOutputStream(out: OutputStream, minBps: Int, maxBps: Int, period: 
 
     while (tick - lastTick > duration) {
       val n = period / duration
-      val step = stepRatio * 2 * (maxBps - minBps)
+      val step = (stepRatio * 2 * (maxBps - minBps)).toInt
 
       // in the 1s half of the period the input rate should be ascending
       if (count % n < n / 2) {
