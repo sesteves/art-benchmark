@@ -33,4 +33,10 @@ class SinusoidOutputStream(out: OutputStream, minBps: Int, maxBps: Int, period: 
 
     write(bytes, 0, bytes.length)
   }
+
+  override def setMinBps(bps: Int): Unit = ???
+
+  override def setMaxBps(bps: Int): Unit = ???
+
+  override def setPeriod(period: Int): Unit = ???
 }

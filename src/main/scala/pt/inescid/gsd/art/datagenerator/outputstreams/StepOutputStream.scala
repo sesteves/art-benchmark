@@ -2,10 +2,8 @@ package pt.inescid.gsd.art.datagenerator.outputstreams
 
 import java.io.OutputStream
 
-class StepOutputStream(out: OutputStream, minBps: Int, maxBps: Int, period: Int)
-  extends ArtOutputStream(out, minBps, maxBps, period) {
-
-  private val phaseBps = Array(minBps, maxBps)
+class StepOutputStream(out: OutputStream, minBpss: Int, maxBpss: Int, periods: Int)
+  extends ArtOutputStream(out, minBpss, maxBpss, periods) {
 
   private var isPhaseZero = true
 
@@ -24,4 +22,19 @@ class StepOutputStream(out: OutputStream, minBps: Int, maxBps: Int, period: Int)
     write(bytes, 0, bytes.length)
   }
 
+  override def setMinBps(bps: Int): Unit = {
+    minBps = bps
+    if(isPhaseZero) {
+      currentBps = minBps
+    }
+  }
+
+  override def setMaxBps(bps: Int): Unit = {
+    maxBps = bps
+    if(!isPhaseZero) {
+      currentBps = maxBps
+    }
+  }
+
+  override def setPeriod(period: Int) = this.period = period
 }

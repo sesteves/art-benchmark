@@ -2,12 +2,16 @@ package pt.inescid.gsd.art.datagenerator.outputstreams
 
 import java.io.OutputStream
 
-class ConstantOutputStream(out: OutputStream, minBps: Int, maxBps: Int, period: Int)
-  extends ArtOutputStream(out, minBps, maxBps, period) {
+class ConstantOutputStream(out: OutputStream, minBpss: Int, maxBpss: Int, periods: Int)
+  extends ArtOutputStream(out, minBpss, maxBpss, periods) {
 
   override def write(bytes: Array[Byte]): Unit = {
-    currentBps = minBps
-
     write(bytes, 0, bytes.length)
   }
+
+  override def setMinBps(bps: Int): Unit = currentBps = bps
+
+  override def setMaxBps(bps: Int): Unit = currentBps = bps
+
+  override def setPeriod(period: Int): Unit = this.period = period
 }

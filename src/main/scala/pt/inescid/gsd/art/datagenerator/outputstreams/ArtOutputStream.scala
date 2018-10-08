@@ -19,6 +19,12 @@ abstract class ArtOutputStream(out: OutputStream, var minBps: Int, var maxBps: I
 
   def write(bytes: Array[Byte]): Unit
 
+  def setMinBps(bps: Int): Unit
+
+  def setMaxBps(bps: Int): Unit
+
+  def setPeriod(period: Int): Unit
+
   override def write(b: Int) {
     waitToWrite(1)
     out.write(b)
@@ -76,8 +82,9 @@ object ArtOutputStreamFactory {
   ArtOutputStream = {
 
     function match {
+      case "constant" => new ConstantOutputStream(out, minBps, maxBps, period)
       case "step" => new StepOutputStream(out, minBps, maxBps, period)
-      case "sinusoid" => ???
+      case "sinusoid" => new SinusoidOutputStream(out, minBps, maxBps, period)
     }
 
   }

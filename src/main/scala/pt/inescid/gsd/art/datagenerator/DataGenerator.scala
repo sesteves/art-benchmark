@@ -99,7 +99,7 @@ object DataGenerator extends WebSocketServer(new InetSocketAddress(3030)) {
       val value = commandParts.last
 
       op match {
-        case "set-min" => artOutputStream.minBps = value.toInt
+        case "set-min" => artOutputStream.setMinBps(value.toInt)
         case "set-max" => artOutputStream.maxBps = value.toInt
         case "set-period" => artOutputStream.period = value.toInt
         case _ => println(s"Invalid operation: $op")
