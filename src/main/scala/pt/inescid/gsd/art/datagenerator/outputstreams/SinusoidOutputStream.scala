@@ -2,8 +2,8 @@ package pt.inescid.gsd.art.datagenerator.outputstreams
 
 import java.io.OutputStream
 
-class SinusoidOutputStream(out: OutputStream, minBps: Int, maxBps: Int, period: Int)
-  extends ArtOutputStream(out, minBps, maxBps, period) {
+class SinusoidOutputStream(out: OutputStream, minBpss: Int, maxBpss: Int, periods: Int)
+  extends ArtOutputStream(out, minBpss, maxBpss, periods) {
 
   val stepRatio = 0.05
 
@@ -17,15 +17,7 @@ class SinusoidOutputStream(out: OutputStream, minBps: Int, maxBps: Int, period: 
     val tick = System.currentTimeMillis()
 
     while (tick - lastTick > duration) {
-      val n = period / duration
-      val step = (stepRatio * 2 * (maxBps - minBps)).toInt
-
-      // in the 1s half of the period the input rate should be ascending
-      if (count % n < n / 2) {
-        currentBps += step
-      } else {
-        currentBps -= step
-      }
+      setCurrentBps
 
       count += 1
       lastTick = tick
@@ -34,9 +26,28 @@ class SinusoidOutputStream(out: OutputStream, minBps: Int, maxBps: Int, period: 
     write(bytes, 0, bytes.length)
   }
 
-  override def setMinBps(bps: Int): Unit = ???
+  def setCurrentBps: Unit = {
+    val n = (1 / stepRatio).toInt
+    val step = (stepRatio * 2 * (maxBps - minBps)).toInt
+    val c = (count % n) + 1
 
-  override def setMaxBps(bps: Int): Unit = ???
+    // in the 1s half of the period the input rate should be ascending
+    if (c <= n / 2) {
+      currentBps = minBps + c * step
+    } else {
+      currentBps = minBps + (n - c) * step
+    }
+  }
 
-  override def setPeriod(period: Int): Unit = ???
+  override def setMinBps(bps: Int): Unit = {
+    minBps = bps
+    setCurrentBps
+  }
+
+  override def setMaxBps(bps: Int): Unit = {
+    maxBps = bps
+    setCurrentBps
+  }
+
+  override def setPeriod(period: Int): Unit = this.period = period
 }
