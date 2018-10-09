@@ -3,6 +3,7 @@ package pt.inescid.gsd.art.benchmark
 import org.apache.spark.SparkConf
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.{Duration, StreamingContext}
+import pt.inescid.gsd.art.benchmark.workloads.WorkloadFactory
 
 object Benchmark {
 
@@ -36,6 +37,8 @@ object Benchmark {
       ssc.rawSocketStream[String](host, port, StorageLevel.MEMORY_ONLY_SER)).toArray
     val stream = ssc.union(rawStreams).flatMap(_.split(' '))
 
+    val workload = WorkloadFactory(app)
+    workload(stream)
 
     ssc.start()
     ssc.awaitTermination(duration)
